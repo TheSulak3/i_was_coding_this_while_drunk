@@ -3,18 +3,13 @@
 
 #include "MinHook/minhook.hpp"
 
-#include "Bin/Monolith.hpp"
-
 #include <filesystem>
 #include <sstream>
-#include <VirtualizerSDK.h>
 
 BOOL __stdcall Hooks::hkCreateProcessW( LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcAttr,
 	LPSECURITY_ATTRIBUTES lpThreadAttr, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment,
 	LPCWSTR lpCurrentDir, LPSTARTUPINFOW pStartupInfo, LPPROCESS_INFORMATION pProcessInfo )
 {
-	VIRTUALIZER_LION_BLACK_START
-
 	std::wstring wsApplicationName = std::wstring( lpCommandLine );
 
 	std::string sApplicationName;
@@ -51,8 +46,6 @@ BOOL __stdcall Hooks::hkCreateProcessW( LPCWSTR lpApplicationName, LPWSTR lpComm
 	WriteProcessMemory( hProcess, pBase, aBinary.data( ), aBinary.size( ), 0 );
 
 	printf( "mapped lol!\n" );
-
-	VIRTUALIZER_LION_BLACK_END
 
 	return bResult;
 }

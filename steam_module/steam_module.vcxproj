@@ -107,8 +107,8 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\</IntDir>
-    <IncludePath>C:\Program Files\Virtualizer\Include\C;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\Virtualizer\Lib\COFF;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Production|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -247,7 +247,6 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bin\Monolith.hpp" />
     <ClInclude Include="Hooks.hpp" />
     <ClInclude Include="Install.hpp" />
     <ClInclude Include="MinHook\buffer.hpp" />
