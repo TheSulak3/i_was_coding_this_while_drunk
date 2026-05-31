@@ -102,7 +102,8 @@ int main( )
 	listen( Socket, 3 );
 
 	printf( "Waiting for connection...\n" );
-	std::string sDirPath = "C:\\Users\\lanes\\Documents\\projects\\csgo\\crecks\\monolith\\cloud\\configs";
+	std::string sDirPath = "configs";
+	std::filesystem::create_directories( sDirPath );
 
 	while ( true )
 	{

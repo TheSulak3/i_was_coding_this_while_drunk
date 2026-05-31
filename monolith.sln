@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "steam_module", "steam_modul
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_server", "local_server\local_server.vcxproj", "{4C58A703-F421-41C6-A0F9-29AF52F2ECC2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memelith", "memelith\memelith.vcxproj", "{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -55,6 +57,18 @@ Global
 		{4C58A703-F421-41C6-A0F9-29AF52F2ECC2}.Release|x64.Build.0 = Release|x64
 		{4C58A703-F421-41C6-A0F9-29AF52F2ECC2}.Release|x86.ActiveCfg = Release|Win32
 		{4C58A703-F421-41C6-A0F9-29AF52F2ECC2}.Release|x86.Build.0 = Release|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Debug|x64.ActiveCfg = Debug|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Debug|x64.Build.0 = Debug|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Debug|x86.ActiveCfg = Debug|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Debug|x86.Build.0 = Debug|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Production|x64.ActiveCfg = Release|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Production|x64.Build.0 = Release|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Production|x86.ActiveCfg = Release|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Production|x86.Build.0 = Release|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Release|x64.ActiveCfg = Release|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Release|x64.Build.0 = Release|x64
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Release|x86.ActiveCfg = Release|Win32
+		{982FA1AF-BA5A-4A81-BCF5-E9EBA3D9B63F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

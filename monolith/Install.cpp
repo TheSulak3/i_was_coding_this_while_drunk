@@ -123,6 +123,31 @@ using json_dump_t = std::string* ( __thiscall* ) (
     const bool ensure_ascii,
     const nlohmann::json::error_handler_t error_handler );
 
+static bool RecvResponse( SOCKET sock, std::vector< uint8_t >& out )
+{
+	char szBuf[ 512 ];
+	int n = recv( sock, szBuf, sizeof( szBuf ) - 1, 0 );
+	if ( n <= 0 ) return false;
+	szBuf[ n ] = '\0';
+
+	int iSize = std::atoi( szBuf );
+	if ( iSize <= 0 ) return false;
+
+	if ( send( sock, "1", 1, 0 ) <= 0 ) return false;
+
+	out.clear( );
+	char szData[ 2049 ];
+	int remaining = iSize;
+	while ( remaining > 0 )
+	{
+		n = recv( sock, szData, min( remaining, ( int ) sizeof( szData ) - 1 ), 0 );
+		if ( n <= 0 ) return false;
+		out.insert( out.end( ), szData, szData + n );
+		remaining -= n;
+	}
+	return true;
+}
+
 int SendBinary(SOCKET s, char* buf, int* len)
 {
 	int total = 0;
@@ -203,10 +228,47 @@ std::string* __fastcall hooked_dump( nlohmann::json* pMeme,
 			//printf( "unk memes %s\n", ( *pMeme ).dump( ).c_str( ) );
 	}
 
-	if ( jsonRequest[ "type" ].get< uint32_t >( ) == 0 )
+	const uint32_t iType = jsonRequest[ "type" ].get< uint32_t >( );
+	if ( iType == 0 )
 		return result;
 
-	// TODO: implement wintcp requests here!
+	const SOCKET sock = ( SOCKET ) g_pGlobals->m_iSocket;
+	if ( sock == 0 || sock == INVALID_SOCKET )
+		return result;
+
+	std::vector< uint8_t > vResponse;
+
+	if ( iType == 3 ) // serverName -> monolist
+	{
+		if ( send( sock, "0", 1, 0 ) > 0 && RecvResponse( sock, vResponse ) )
+			g_pGlobals->m_aJsonResponses.push_back( vResponse );
+	}
+	else if ( iType == 1 ) // Get config list
+	{
+		if ( send( sock, "1", 1, 0 ) > 0 && RecvResponse( sock, vResponse ) )
+			g_pGlobals->m_aJsonResponses.push_back( vResponse );
+	}
+	else if ( iType == 2 ) // GetID
+	{
+		char szAck[ 4 ];
+		if ( send( sock, "2", 1, 0 ) <= 0 ) return result;
+		if ( recv( sock, szAck, sizeof( szAck ) - 1, 0 ) <= 0 || szAck[ 0 ] != '1' ) return result;
+		std::string sID = std::to_string( jsonRequest[ "item_id" ].get< int >( ) );
+		if ( send( sock, sID.c_str( ), ( int ) sID.length( ), 0 ) > 0 && RecvResponse( sock, vResponse ) )
+			g_pGlobals->m_aJsonResponses.push_back( vResponse );
+	}
+	else if ( iType == 4 || iType == 5 ) // Update / Create
+	{
+		char szAck[ 4 ];
+		if ( send( sock, "3", 1, 0 ) <= 0 ) return result;
+		if ( recv( sock, szAck, sizeof( szAck ) - 1, 0 ) <= 0 || szAck[ 0 ] != '1' ) return result;
+		std::string sData = jsonRequest.dump( );
+		std::string sSize = std::to_string( sData.length( ) );
+		if ( send( sock, sSize.c_str( ), ( int ) sSize.length( ), 0 ) <= 0 ) return result;
+		if ( recv( sock, szAck, sizeof( szAck ) - 1, 0 ) <= 0 || szAck[ 0 ] != '1' ) return result;
+		int iLen = ( int ) sData.length( );
+		SendBinary( sock, const_cast< char* >( sData.c_str( ) ), &iLen );
+	}
 
 	return result;
 }
