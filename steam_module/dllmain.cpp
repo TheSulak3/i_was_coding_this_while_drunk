@@ -9,13 +9,13 @@ using RtlAdjustPrivilege_t = NTSTATUS ( __stdcall* ) ( ULONG, BOOLEAN, BOOLEAN, 
 
 BOOL __stdcall DllMain( HMODULE hModule, DWORD ulReason, LPVOID lpReserved )
 {
+	if ( ulReason != DLL_PROCESS_ATTACH )
+		return 1;
+
 	AllocConsole( );
 	freopen_s( reinterpret_cast< FILE** >( stdin ), "CONIN$", "r", stdin );
 	freopen_s( reinterpret_cast< FILE** >( stdout ), "CONOUT$", "w", stdout );
 	SetConsoleTitleA( "=)" );
-
-	if ( ulReason != DLL_PROCESS_ATTACH )
-		return 0;
 
 	HMODULE hNtDll = GetModuleHandleA( "ntdll.dll" );
 	if ( !hNtDll )
