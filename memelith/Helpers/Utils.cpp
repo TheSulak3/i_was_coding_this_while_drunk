@@ -6,7 +6,7 @@ CUtils g_Utils;
 
 uint8_t* CUtils::FindPattern( std::string sModule, std::string sPattern )
 {
-	static auto PatternToBytes = [ ] ( const char* pszPattern )     
+	static auto PatternToBytes = [ ] ( const char* pszPattern )
     {
         auto bytes = std::vector< int >{ };
         auto start = const_cast< char* >( pszPattern );

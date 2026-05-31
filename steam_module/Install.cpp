@@ -3,8 +3,6 @@
 
 #include "MinHook/minhook.hpp"
 
-#include <iostream>
-
 void CInstall::Init( )
 {
 	if ( MH_Initialize( ) != MH_OK )

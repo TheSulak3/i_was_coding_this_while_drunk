@@ -24,7 +24,7 @@ LONG __stdcall ExceptionHandler( PEXCEPTION_POINTERS pException )
 
 BOOL __stdcall Hooks::hkDllMain( HMODULE hModule, DWORD ulReason, LPVOID lpReserved )
 {
-	std::vector< uint32_t > aInitTerm =
+	static const uint32_t aInitTerm[] =
 	{
 		0x221c09dd, 0x221c0a6e, 0x221c0a2a, 0x221c0a0b,
 		0x221c0a64, 0x221c0a84, 0x221c0a9a, 0x221c09ff,
@@ -108,31 +108,23 @@ HANDLE __stdcall Hooks::hkCreateThread( void* pSecurity, DWORD ulStackSize, void
 HINTERNET __stdcall Hooks::hkInternetOpenA( LPCSTR lpszAgent, DWORD dwAccessType,
 	LPCSTR lpszProxy, LPCSTR lpszProxyBypass, DWORD dwFlags )
 {
-	//printf( "[ inet_open ] %s %s\n", lpszAgent, lpszProxy ); 
 	return ( HINTERNET ) 0x14881488;
-	//return o_InternetOpenA( lpszAgent, dwAccessType, lpszProxy, lpszProxyBypass, dwFlags );
 }
 
 HINTERNET __stdcall Hooks::hkInternetConnectA( HINTERNET hInternet, LPCSTR lpszServerName, INTERNET_PORT nServerPort, LPCSTR lpszUserName,
 		LPCSTR lpszPassword, DWORD dwService, DWORD dwFlags, DWORD_PTR dwContext )
 {
-	//printf( "[ inet_conn ] %s %d %s %s\n", lpszServerName, nServerPort, lpszUserName, lpszPassword );
-	//return o_InternetConnectA( hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext );
 	return ( HINTERNET ) 0x14881488;
 }
 
 HINTERNET __stdcall Hooks::hkHttpOpenRequestA( HINTERNET hInternet, LPCSTR lpszVerb, LPCSTR lpszObjectName, LPCSTR lpszVersion,
 	LPCSTR lpszReferrer, LPCSTR* lplpszAcceptTypes, DWORD dwFlags, DWORD_PTR dwContext )
 {
-	//printf( "[ inet_open ] %s %s %s %s\n", lpszVerb, lpszObjectName, lpszVersion, lpszReferrer );
-	//return o_HttpOpenRequestA( hInternet, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext );
 	return ( HINTERNET ) 0x14881488;
 }
 
 BOOL __stdcall Hooks::hkHttpSendRequestA( HINTERNET hRequest, LPCSTR lpszHeaders, DWORD dwHeadersLength, LPVOID lpOptional, DWORD dwOptionalLength )
 {
-	//printf( "[inet_send] %s 0x%p (0x%lX) 0x%p\n", lpszHeaders, lpOptional, dwOptionalLength, _ReturnAddress( ) );
-	//return o_HttpSendRequestA( hRequest, lpszHeaders, dwHeadersLength, lpOptional, dwOptionalLength );
 	return 1;
 }
 
@@ -178,8 +170,5 @@ BOOL __stdcall Hooks::hkInternetReadFile( HINTERNET hFile, LPVOID lpBuffer, DWOR
 
 BOOL __stdcall Hooks::hkInternetCloseHandle( HINTERNET hInternet )
 {
-	//printf( "[inet_closehandle] closed handle from 0x%p\n", _ReturnAddress( ) );
 	return 1;
-	
-	//return o_InternetCloseHandle( hInternet );
 }

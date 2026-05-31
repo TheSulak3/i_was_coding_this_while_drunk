@@ -5,8 +5,6 @@
 #include <Windows.h>
 #include <vector>
 
-typedef void* ( *CreateInterfaceFn ) ( const char* pName, int* pReturnCode );
-
 class InterfaceReg
 {
 private:
@@ -36,7 +34,7 @@ T* GetInterface( HMODULE hModule, const char* szInterfaceVersion, bool bExact = 
 	register_list = **reinterpret_cast<InterfaceReg***>(jump_target + 6);
 
 	for (InterfaceReg* cur = register_list; cur; cur = cur->m_pNext) {
-		if (bExact == true) {
+		if (bExact) {
 			if (strcmp(cur->m_pName, szInterfaceVersion) == 0)
 				iface = reinterpret_cast<T*>(cur->m_CreateFn());
 		}
@@ -54,7 +52,7 @@ void CCheat::Init( )
     *reinterpret_cast< uint32_t* >( 0x224628CA ) = 0x100; // m_iHealth (hazedumper)
     *reinterpret_cast< uint32_t* >( 0x224628FA ) = 0xF4; // m_iTeamNum (hazedumper)
 
-    std::vector< uint32_t > aInThirdperson =
+    static const uint32_t aInThirdperson[] =
     {
         0x227D0E5A, 0x227C340E, 0x2277F467, 0x2277F025,
     };
@@ -111,11 +109,10 @@ __forceinline void CCheat::SetupHooks( )
 
     std::vector< std::tuple< uint8_t*, uint32_t, uint32_t > > aHooks =
 	{
-        std::make_tuple( ( *( uint8_t*** ) pDevice )[ 42 ], 0x2E199B20, 0x2E46EAF4 ),
-		std::make_tuple( ( *( uint8_t*** ) pDevice )[ 16 ], 0x2E199E00, 0x2E48DFF0 ),
+        { ( *( uint8_t*** ) pDevice )[ 42 ], 0x2E199B20, 0x2E46EAF4 },
+		{ ( *( uint8_t*** ) pDevice )[ 16 ], 0x2E199E00, 0x2E48DFF0 },
     };
 
-    size_t iCurrentIter = 0;
 	for ( const auto& CurrentHook : aHooks )
 	{
 		void* pOriginal = nullptr;
@@ -140,7 +137,7 @@ __forceinline void CCheat::SetupHooks( )
 
 uint8_t* CCheat::FindPattern( std::string sModule, std::string sPattern )
 {
-	static auto PatternToBytes = [ ] ( const char* pszPattern )     
+	static auto PatternToBytes = [ ] ( const char* pszPattern )
     {
         auto bytes = std::vector< int >{ };
         auto start = const_cast< char* >( pszPattern );

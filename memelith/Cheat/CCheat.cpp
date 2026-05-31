@@ -166,9 +166,6 @@ __forceinline void CCheat::SetupInterfaces( )
 	for ( const auto& address : nullptr_calls )
 		*reinterpret_cast< uint32_t* >( address + 0x1 ) = ( uint32_t ) get_interface - ( address + 0x5 );
 
-	using shit_t = void ( __cdecl* ) ( );
-	//( reinterpret_cast< shit_t >( 0x404FECE0 ) )( );
-
 	uint8_t** pInterfaces = reinterpret_cast< uint8_t** >( malloc( 0xC8 ) );
 	if ( !pInterfaces )
 		return;
@@ -194,8 +191,8 @@ __forceinline void CCheat::SetupInterfaces( )
 	pInterfaces[ 13 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "EngineTraceServer", false );
 	pInterfaces[ 14 ] = GetInterface< uint8_t >( GetModuleHandleA( "vstdlib.dll" ), "VEngineCvar", false );
 	pInterfaces[ 15 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VDebugOverlay", false );
-	pInterfaces[ 17 ] = GetInterface< uint8_t >( GetModuleHandleA( "localize.dll" ), "Localize_001" );
 	pInterfaces[ 16 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VModelInfoClient", false );
+	pInterfaces[ 17 ] = GetInterface< uint8_t >( GetModuleHandleA( "localize.dll" ), "Localize_001" );
 	{
 		auto pMemAlloc = GetProcAddress( GetModuleHandleA( "tier0.dll" ), "g_pMemAlloc" );
 		pInterfaces[ 18 ] = pMemAlloc ? *( uint8_t** ) pMemAlloc : nullptr;
@@ -211,10 +208,10 @@ __forceinline void CCheat::SetupInterfaces( )
 	pInterfaces[ 27 ] = **( uint8_t*** ) g_aInterfaces[ 4 ];
 	pInterfaces[ 28 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "GAMEEVENTSMANAGER002" );
 	pInterfaces[ 29 ] = GetInterface< uint8_t >( GetModuleHandleA( "filesystem_stdio.dll" ), "VBaseFileSystem011" );
-	pInterfaces[ 33 ] = GetInterface< uint8_t >( GetModuleHandleA( "filesystem_stdio.dll" ), "VFileSystem017" );
+	pInterfaces[ 30 ] = GetInterface< uint8_t >( GetModuleHandleA( "client.dll" ), "GameUI011" );
 	pInterfaces[ 31 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VEngineClientStringTable001" );
 	pInterfaces[ 32 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VEngineEffects", false );
-	pInterfaces[ 30 ] = GetInterface< uint8_t >( GetModuleHandleA( "client.dll" ), "GameUI011" );
+	pInterfaces[ 33 ] = GetInterface< uint8_t >( GetModuleHandleA( "filesystem_stdio.dll" ), "VFileSystem017" );
 	pInterfaces[ 34 ] = *( uint8_t** ) g_aInterfaces[ 5 ];
 	pInterfaces[ 38 ] = *( uint8_t** ) g_aInterfaces[ 6 ];
 	pInterfaces[ 39 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VEngineRenderView", false );
@@ -268,54 +265,25 @@ __forceinline void CCheat::SetupInterfaces( )
 	*reinterpret_cast< FARPROC* >( 0x407E9204 ) = GetProcAddress( GetModuleHandleA( "vstdlib.dll" ), "RandomInt" );
 	*reinterpret_cast< FARPROC* >( 0x407E9208 ) = GetProcAddress( GetModuleHandleA( "vstdlib.dll" ), "RandomGaussianFloat" );
 
-	std::map< size_t, size_t > aIndexRedirections =
+	// { pInterfaces src, output dst } — pInterfaces[2] unavailable (failed 0x15B836D7)
+	static const std::pair< size_t, size_t > aIndexRedirections[] =
 	{
-		std::make_pair( 0, 0 ),
-		std::make_pair( 1, 1 ),
-		// failed 0x15B836D7 2!
-		std::make_pair( 3, 3 ),
-		std::make_pair( 4, 4 ),
-		std::make_pair( 5, 5 ),
-		std::make_pair( 6, 6 ),
-		std::make_pair( 31, 7 ),
-		std::make_pair( 7, 8 ),
-		std::make_pair( 8, 9 ),
-		std::make_pair( 9, 10 ),
-		std::make_pair( 10, 11 ),
-		std::make_pair( 11, 12 ),
-		std::make_pair( 12, 13 ),
-		std::make_pair( 13, 14 ),
-		std::make_pair( 14, 15 ),
-		std::make_pair( 15, 16 ),
-		std::make_pair( 17, 17 ),
-		std::make_pair( 16, 18 ),
-		std::make_pair( 18, 19 ),
-		std::make_pair( 19, 20 ),
-		std::make_pair( 20, 21 ),
-		std::make_pair( 21, 22 ),
-		std::make_pair( 22, 23 ),
-		std::make_pair( 23, 24 ),
-		std::make_pair( 24, 25 ),
-		std::make_pair( 25, 26 ),
-		std::make_pair( 26, 27 ),
-		std::make_pair( 28, 29 ),
-		std::make_pair( 38, 30 ),
-		std::make_pair( 39, 31 ),
-		std::make_pair( 40, 32 ),
-		std::make_pair( 29, 33 ),
-		std::make_pair( 33, 34 ),
-		std::make_pair( 41, 35 ),
-		std::make_pair( 32, 36 ),
-		std::make_pair( 35, 37 ),
-		std::make_pair( 36, 38 ),
-		std::make_pair( 42, 39 ),
-		std::make_pair( 34, 40 ),
-		std::make_pair( 37, 41 ),
-		std::make_pair( 43, 42 ),
-		std::make_pair( 30, 43 ),
-		std::make_pair( 44, 44 ),
-		std::make_pair( 45, 45 ),
-		std::make_pair( 46, 46 ),
+		{ 0, 0 }, { 1, 1 },
+		{ 3, 3 }, { 4, 4 }, { 5, 5 }, { 6, 6 },
+		{ 31, 7 },
+		{ 7, 8 }, { 8, 9 }, { 9, 10 }, { 10, 11 }, { 11, 12 }, { 12, 13 },
+		{ 13, 14 }, { 14, 15 }, { 15, 16 },
+		{ 17, 17 }, { 16, 18 },
+		{ 18, 19 }, { 19, 20 }, { 20, 21 }, { 21, 22 }, { 22, 23 }, { 23, 24 },
+		{ 24, 25 }, { 25, 26 }, { 26, 27 },
+		{ 28, 29 },
+		{ 38, 30 }, { 39, 31 }, { 40, 32 },
+		{ 29, 33 }, { 33, 34 },
+		{ 41, 35 }, { 32, 36 },
+		{ 35, 37 }, { 36, 38 },
+		{ 42, 39 }, { 34, 40 }, { 37, 41 },
+		{ 43, 42 }, { 30, 43 },
+		{ 44, 44 }, { 45, 45 }, { 46, 46 },
 	};
 
 	*reinterpret_cast< uint8_t*** >( 0x40808990 ) = reinterpret_cast< uint8_t** >( malloc( 0xBC ) );
@@ -334,7 +302,7 @@ __forceinline void CCheat::SetupClassIDs( )
 	if ( !pClassIDs )
 		return;
 
-	std::vector< uint32_t > aHashes =
+	static const uint32_t aHashes[] =
 	{
 		0xb7883b54, 0x32813ad0, 0xa7d262c6, 0x942cf950,
 		0x24ee1f1e, 0x8f1973b4, 0x7d4fc4bd, 0xd3e6a40c,
@@ -409,8 +377,9 @@ __forceinline void CCheat::SetupClassIDs( )
 	};
 
 	using GetOffset_t = uint8_t* ( __thiscall* ) ( void* thisptr, uint32_t iHash );
-	for ( size_t i = 0; i < aHashes.size( ); i++ )
-		pClassIDs[ i ] = ( reinterpret_cast< GetOffset_t >( 0x4024CCA0 ) )( this, aHashes[ i ] ^ 0x14881337 );
+	size_t i = 0;
+	for ( const auto hash : aHashes )
+		pClassIDs[ i++ ] = ( reinterpret_cast< GetOffset_t >( 0x4024CCA0 ) )( this, hash ^ 0x14881337 );
 
 	*reinterpret_cast< uint8_t*** >( 0x407E80D8 ) = pClassIDs;
 
@@ -422,7 +391,7 @@ __forceinline void CCheat::SetupWeapons( )
 	uint8_t* pWeaponManager = ( reinterpret_cast< uint8_t* ( __cdecl* ) ( void ) >( g_aAddresses[ 0 ] ) )( ) + 0x4;
 	uint8_t** pWeapons = reinterpret_cast< uint8_t** >( malloc( 0x180 ) );
 
-	std::vector< uint32_t > aHashes =
+	static const uint32_t aHashes[] =
 	{
 		0x7e231775, 0x2e599db2, 0x991d098c, 0xc24a99db,
 		0x2c2c7c50, 0xc09bd8b2, 0xfb85eff5, 0x49fe1851,
@@ -450,8 +419,9 @@ __forceinline void CCheat::SetupWeapons( )
 	};
 
 	using GetWeapon_t = uint8_t* ( __thiscall* ) ( void* thisptr, uint8_t* pWeaponMgr, uint32_t iHash );
-	for ( size_t i = 0; i < aHashes.size( ); i++ )
-		pWeapons[ i ] = ( reinterpret_cast< GetWeapon_t >( 0x40566970 ) )( this, pWeaponManager, aHashes[ i ] ^ 0x13371337 );
+	size_t i = 0;
+	for ( const auto hash : aHashes )
+		pWeapons[ i++ ] = ( reinterpret_cast< GetWeapon_t >( 0x40566970 ) )( this, pWeaponManager, hash ^ 0x13371337 );
 
 	*reinterpret_cast< uint8_t*** >( 0x40808998 ) = pWeapons;
 }
@@ -568,12 +538,11 @@ __forceinline void CCheat::SetupAddresses( )
 	pAddresses[ 104 ] = g_aOffsets[ 98 ];
 	pAddresses[ 105 ] = g_aOffsets[ 99 ];
 	pAddresses[ 106 ] = g_aOffsets[ 100 ];
-	pAddresses[ 107 ] = g_aOffsets[ 101 ];
+	pAddresses[ 107 ] = g_aOffsets[ 106 ];
 	pAddresses[ 108 ] = g_aOffsets[ 102 ];
 	pAddresses[ 109 ] = g_aOffsets[ 103 ];
 	pAddresses[ 110 ] = g_aOffsets[ 104 ];
 	pAddresses[ 111 ] = g_aOffsets[ 105 ];
-	pAddresses[ 107 ] = g_aOffsets[ 106 ];
 	pAddresses[ 113 ] = g_aOffsets[ 107 ];
 	pAddresses[ 114 ] = g_aOffsets[ 108 ];
 	pAddresses[ 115 ] = g_aOffsets[ 109 ];
@@ -615,9 +584,11 @@ __forceinline void CCheat::SetupAddresses( )
 	pAddresses[ 152 ] = g_aOffsets[ 145 ];
 	pAddresses[ 153 ] = g_aOffsets[ 146 ];
 	pAddresses[ 154 ] = g_aOffsets[ 147 ];
+	pAddresses[ 155 ] = g_aOffsets[ 148 ];
 	pAddresses[ 156 ] = g_aOffsets[ 149 ];
 	pAddresses[ 157 ] = g_aOffsets[ 150 ];
 	pAddresses[ 158 ] = g_aOffsets[ 151 ];
+	pAddresses[ 159 ] = g_aOffsets[ 152 ];
 	pAddresses[ 160 ] = g_aOffsets[ 153 ];
 	pAddresses[ 161 ] = g_aOffsets[ 154 ];
 	pAddresses[ 162 ] = g_aOffsets[ 155 ];
@@ -643,7 +614,6 @@ __forceinline void CCheat::SetupAddresses( )
 	pAddresses[ 183 ] = g_aOffsets[ 175 ];
 	pAddresses[ 184 ] = g_aOffsets[ 176 ];
 	pAddresses[ 185 ] = g_aOffsets[ 177 ];
-	pAddresses[ 12 ] = g_aOffsets[ 178 ];
 	pAddresses[ 187 ] = g_aOffsets[ 179 ];
 	pAddresses[ 188 ] = g_aOffsets[ 180 ];
 	pAddresses[ 189 ] = g_aOffsets[ 181 ];
@@ -667,8 +637,6 @@ __forceinline void CCheat::SetupAddresses( )
 	pAddresses[ 208 ] = g_aOffsets[ 199 ];
 	pAddresses[ 209 ] = g_aOffsets[ 200 ];
 	pAddresses[ 210 ] = g_aOffsets[ 201 ];
-	pAddresses[ 159 ] = g_aOffsets[ 152 ];
-	pAddresses[ 155 ] = g_aOffsets[ 148 ];
 
 	*reinterpret_cast< uint8_t*** >( 0x408089B8 ) = pAddresses;
 
@@ -700,7 +668,7 @@ __forceinline void CCheat::InitPointers( )
 
 	g_aAddresses[ 0 ] = g_Utils.FindPattern( "client.dll", "A1 ? ? ? ? 85 C0 75 53" );
 
-	g_aOffsets[ 0 ] = g_Utils.FindPattern( "engine.dll", "8B 35 ? ? ? ? 83 C6 08 83 BE ? ? ? ? ? 75" ) + 0x2;
+	g_aOffsets[ 0 ] = g_aInterfaces[ 4 ];
 	g_aOffsets[ 1 ] = g_Utils.FindPattern( "client.dll", "8B 0D ? ? ? ? 8B 01 FF 50 2C 33 C9 85 FF 0F 44 F1 8B C8 8B 10 56 FF 52 04 F6 47 0C 01" ) + 0x2;
 	g_aOffsets[ 2 ] = g_Utils.FindPattern( "client.dll", "8B 3D ? ? ? ? 85 FF 0F 84 ? ? ? ? 81 C7" ) + 0x2;
 	g_aOffsets[ 3 ] = g_Utils.FindPattern( "client.dll", "8B 8E ? ? ? ? 85 C9 74 3E" ) + 0x2;
@@ -878,7 +846,6 @@ __forceinline void CCheat::InitPointers( )
 	g_aOffsets[ 175 ] = g_Utils.FindPattern( "client.dll", "56 8B F1 83 BE ? ? ? ? ? 75 14 8B 46 04 8D 4E 04 FF 50 20 85 C0 74 07 8B CE E8 ? ? ? ? 8B 86 ? ? ? ? 85 C0 74 05 83 38 00 75 02 33 C0 5E" );
 	g_aOffsets[ 176 ] = g_Utils.FindPattern( "client.dll", "55 8B EC 56 8B F1 8B 4D 08 85 C9 74 71 8B 06" );
 	g_aOffsets[ 177 ] = g_Utils.FindPattern( "client.dll", "89 86 ? ? ? ? E8 ? ? ? ? 80 BE" ) + 0x2;
-	g_aOffsets[ 178 ] = g_Utils.FindPattern( "client.dll", "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81" );
 	g_aOffsets[ 179 ] = g_Utils.FindPattern( "client.dll", "8B 92 ? ? ? ? 8D 0C 80 53 8B 1D ? ? ? ? 0F 57 C0 56" ) + 0x2;
 	g_aOffsets[ 180 ] = g_Utils.FindPattern( "client.dll", "55 8B EC 83 E4 C0 83 EC 38 56 8B F1" );
 	g_aOffsets[ 181 ] = g_Utils.FindPattern( "server.dll", "55 8B EC 56 8B 75 08 57 8B F9 56 8B 07 FF 90" );

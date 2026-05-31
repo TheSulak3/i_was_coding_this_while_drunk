@@ -20,15 +20,15 @@
 void* o_findpattern = nullptr;
 void* o_createhook = nullptr;
 
-std::unordered_map< std::string, std::string > pattern_redirs = // changes outdated pattern to a new ones
+std::unordered_map< std::string, std::string > pattern_redirs = // changes outdated patterns to new ones
 {
-	std::make_pair( "84 C0 75 04 B0 01 5F", "84 C0 75 05 B0 01 5F" ),
-	std::make_pair( "55 8B EC 83 E4 F8 83 EC 78 56 57 8B 3D ? ? ? ? 89 4C 24 18", "55 8B EC 83 E4 F8 83 EC 78 56 89" ),
-	std::make_pair( "55 8B EC 83 EC 18 56 8B 35 ? ? ? ? 57 8B 7D 08", "55 8B EC 83 EC 18 53 56 8B D9 8B 4D 04 57" ),
-	std::make_pair( "55 8B EC 83 E4 F8 81 EC ? ? ? ? 53 56 57 8B 7D 08 89 4C 24 14", "55 8B EC 83 E4 F8 81 EC  0C 04 00 00 53 56 57 8B 7D 08 8B D9 89 5C 24 14" ),
-	std::make_pair( "E8 ? ? ? ? 8B 45 F4 8B 55 F0 47", "E8 ? ? ? ? 8B 45 F4 8B 4D F0 47" ),
-	std::make_pair( "56 8B 35 ? ? ? ? 57 85 F6 74 56", "55 8B EC 8B 4D 04 56 57 E8 ? ? ? ? 8B 35 ? ? ? ? 85 F6 74 57 8B" ),
-	std::make_pair( "55 8B EC A1 ? ? ? ? 56 8B 75 08 83 FE FF", "55 8B EC 8B 4D 04 56 8B  C1 83 C0 08 8B 75 08 A1" ),
+	{ "84 C0 75 04 B0 01 5F", "84 C0 75 05 B0 01 5F" },
+	{ "55 8B EC 83 E4 F8 83 EC 78 56 57 8B 3D ? ? ? ? 89 4C 24 18", "55 8B EC 83 E4 F8 83 EC 78 56 89" },
+	{ "55 8B EC 83 EC 18 56 8B 35 ? ? ? ? 57 8B 7D 08", "55 8B EC 83 EC 18 53 56 8B D9 8B 4D 04 57" },
+	{ "55 8B EC 83 E4 F8 81 EC ? ? ? ? 53 56 57 8B 7D 08 89 4C 24 14", "55 8B EC 83 E4 F8 81 EC  0C 04 00 00 53 56 57 8B 7D 08 8B D9 89 5C 24 14" },
+	{ "E8 ? ? ? ? 8B 45 F4 8B 55 F0 47", "E8 ? ? ? ? 8B 45 F4 8B 4D F0 47" },
+	{ "56 8B 35 ? ? ? ? 57 85 F6 74 56", "55 8B EC 8B 4D 04 56 57 E8 ? ? ? ? 8B 35 ? ? ? ? 85 F6 74 57 8B" },
+	{ "55 8B EC A1 ? ? ? ? 56 8B 75 08 83 FE FF", "55 8B EC 8B 4D 04 56 8B  C1 83 C0 08 8B 75 08 A1" },
 };
 
 std::unordered_map< uint8_t*, std::pair< std::string, std::string > > address_records = { };
@@ -38,17 +38,18 @@ uint8_t* __fastcall hk_findpattern( uint32_t thisptr, int, std::string module_na
 	using findpattern_t = uint8_t* ( __thiscall* ) ( uint32_t, std::string, std::string, bool, int );
 
 	auto result = ( ( findpattern_t ) o_findpattern )( thisptr, module_name, pattern, is_relative, rel_offset );
-	
-	if ( pattern_redirs.find( pattern ) != pattern_redirs.end( ) )
-		result = g_Utils.FindPattern( module_name, pattern_redirs.at( pattern ) );
+
+	auto it = pattern_redirs.find( pattern );
+	if ( it != pattern_redirs.end( ) )
+	{
+		result = g_Utils.FindPattern( module_name, it->second );
+		pattern = it->second;
+	}
 
 	if ( !result )
 		printf( "[failed] %s %s (%d 0x%X)\n", module_name.c_str( ), pattern.c_str( ), is_relative, rel_offset );
-	
-	if ( pattern_redirs.find( pattern ) != pattern_redirs.end( ) )
-		pattern = pattern_redirs.at( pattern );
 
-	address_records.emplace( std::make_pair( result, std::make_pair( module_name, pattern ) ) );
+	address_records.emplace( result, std::make_pair( module_name, pattern ) );
 
 	return result;
 }
@@ -86,13 +87,10 @@ void CInstall::Init( )
 		*reinterpret_cast< uint32_t* >( std::get< 0 >( CurrentImport ) ) = pFunction;
 	}
 
-	std::vector< uint8_t > aOrigBytes =
-	{
-		0x55, 0x8B, 0xEC, 0x6A, 0xFF
-	};
+	static const uint8_t aOrigBytes[] = { 0x55, 0x8B, 0xEC, 0x6A, 0xFF };
 
-	memcpy( reinterpret_cast< void* >( 0x224633d0 ), aOrigBytes.data( ), aOrigBytes.size( ) );
-	memcpy( reinterpret_cast< void* >( 0x225a8710 ), aOrigBytes.data( ), aOrigBytes.size( ) );
+	memcpy( reinterpret_cast< void* >( 0x224633d0 ), aOrigBytes, sizeof( aOrigBytes ) );
+	memcpy( reinterpret_cast< void* >( 0x225a8710 ), aOrigBytes, sizeof( aOrigBytes ) );
 
 	SetupHooks( );
 	Connect( );
@@ -224,8 +222,6 @@ std::string* __fastcall hooked_dump( nlohmann::json* pMeme,
 			jsonRequest[ "type" ] = 6;
 			jsonRequest[ "item_id" ] = ( *pMeme )[ "id" ].get< int >( );
 		}
-		//else
-			//printf( "unk memes %s\n", ( *pMeme ).dump( ).c_str( ) );
 	}
 
 	const uint32_t iType = jsonRequest[ "type" ].get< uint32_t >( );
@@ -320,8 +316,6 @@ void __fastcall hooked_parse( void* string, int, const bool strict, nlohmann::js
 		printf( "parse failed\n" );
 		return;
 	}
-
-	//printf( "json resp %s\n", jsonResult.dump( ).c_str( ) );
 
 	*pResult = jsonResult;
 }

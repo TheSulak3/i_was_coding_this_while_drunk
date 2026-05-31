@@ -3,9 +3,6 @@
 
 #include "MinHook/minhook.hpp"
 
-#include <filesystem>
-#include <sstream>
-
 BOOL __stdcall Hooks::hkCreateProcessW( LPCWSTR lpApplicationName, LPWSTR lpCommandLine, LPSECURITY_ATTRIBUTES lpProcAttr,
 	LPSECURITY_ATTRIBUTES lpThreadAttr, BOOL bInheritHandles, DWORD dwCreationFlags, LPVOID lpEnvironment,
 	LPCWSTR lpCurrentDir, LPSTARTUPINFOW pStartupInfo, LPPROCESS_INFORMATION pProcessInfo )
@@ -28,7 +25,7 @@ BOOL __stdcall Hooks::hkCreateProcessW( LPCWSTR lpApplicationName, LPWSTR lpComm
 		return bResult;
 	}
 
-	std::vector< uint8_t > aBinary = { };
+	std::vector< uint8_t > aBinary;
 	g_Utils.OpenBinary( "0x221B0000.bin", aBinary );
 
 	if ( aBinary.empty( ) )

@@ -6,33 +6,10 @@
 #include <algorithm>
 #include <filesystem>
 #include <sstream>
-#include <chrono>
-#include <cstdio>
 
 #include "Json.hpp"
 
 #pragma comment(lib,"ws2_32.lib")
-
-void WstringToString( const std::wstring& sSource, std::string& sDest )
-{
-    std::string tmp;
-    tmp.resize( sSource.size( ) );
-    std::transform( sSource.begin( ), sSource.end( ), tmp.begin( ), wctob );
-    tmp.swap( sDest );
-}
-
-void OpenBinary( std::string m_sSource, std::vector< std::uint8_t > &m_aData )
-{
-    std::ifstream m_strFile( m_sSource, std::ios::binary );
-    m_strFile.unsetf( std::ios::skipws );
-    m_strFile.seekg( 0, std::ios::end );
-
-    const auto m_iSize = m_strFile.tellg( );
-
-    m_strFile.seekg( 0, std::ios::beg );
-    m_aData.reserve( static_cast< uint32_t >( m_iSize ) );
-    m_aData.insert( m_aData.begin( ), std::istream_iterator< std::uint8_t >( m_strFile ), std::istream_iterator< std::uint8_t >( ) );
-}
 
 int SendBinary(SOCKET s, char* buf, int* len)
 {
@@ -53,7 +30,7 @@ int SendBinary(SOCKET s, char* buf, int* len)
 	return n == -1 ? -1 : 0;
 }
 
-std::vector< std::string > configs = // this shit should be fixed
+static const char* const configs[] =
 {
 	"a29uZmlndXJhY2l5YSkpKQ==",
 	"aHVldGE=",
@@ -351,7 +328,7 @@ int main( )
 					{
 						printf( "creating new config....\n" );
 
-						std::ofstream shit_file( sDirPath + "\\" + configs[ ( rand( ) % configs.size( ) ) ] + ".json" );
+						std::ofstream shit_file( sDirPath + "\\" + configs[ rand( ) % std::size( configs ) ] + ".json" );
 						shit_file << jsonData[ "config" ].get< std::string >( );
 						shit_file.close( );
 					}

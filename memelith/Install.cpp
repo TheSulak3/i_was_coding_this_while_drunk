@@ -20,16 +20,6 @@ uint8_t* __fastcall hk_findpattern( uint32_t thisptr, int, std::string module_na
 	return result;
 }
 
-void* o_pushback;
-int __fastcall hk_push_back( void* thisptr, int, uint32_t* pointer )
-{
-	static int index = 0;
-	printf( "[+][%d] pushed 0x%X (ret 0x%p)\n", index, *pointer, _ReturnAddress( ) );
-	index++;
-
-	return ( ( int ( __thiscall* ) ( void*, uint32_t* ) ) o_pushback )( thisptr, pointer );
-}
-
 void CInstall::Init( )
 {
 	printf( "[ t.me/violanes ] loading cheat...\n" );
@@ -110,9 +100,6 @@ __forceinline void CInstall::SetupHooks( )
 	
 	if ( MH_CreateHook( reinterpret_cast< void* >( 0x40665B90 ), hk_findpattern, &o_findpattern ) != MH_OK )
 		return;
-	
-	//if ( MH_CreateHook( reinterpret_cast< void* >( 0x404F7230 ), hk_push_back, &o_pushback ) != MH_OK )
-		//return;
 
 	if ( MH_EnableHook( MH_ALL_HOOKS ) != MH_OK )
 		return;

@@ -2,7 +2,6 @@
 
 #include <Windows.h>
 #include <fstream>
-#include <sstream>
 #include <algorithm>
 
 CUtils g_Utils;
