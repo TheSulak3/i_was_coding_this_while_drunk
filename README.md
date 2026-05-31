@@ -1,15 +1,12 @@
 ### How to use:
-1. Change paths to bins in sources
-2. Compile (llvm + cpp20)
-3. Inject steam_module.dll into steam.exe (parent steam process)
-4. Launch local_server.exe (make sure port is not used already, if so change it or shutdown other application)
-5. Inject monolith.dll into csgo.exe
-
-Probably it may be crashing sometimes cause I haven't updated it for long enough.
-If you researched and fixed some crash/bug, please make a pull request! Also don't create any issues in this project cause I don't really care
+1. Compile (llvm + cpp20), requires -insecure launch option in CS:GO
+2. Place `0x221B0000.bin` (built monolith binary) next to `steam_module.dll`
+3. Inject `steam_module.dll` into the parent steam.exe process — it will auto-inject the cheat when CS:GO launches
+4. Launch `local_server.exe` (port 1488, configs stored in `configs/` next to the exe)
+5. Inject `memelith.dll` into csgo.exe
 
 ### Cloud
-You need to change ws protocol connection to win tcp in monolith project or it wouldn't work with local server presented in the project
+Local server uses TCP on port 1488. The TCP wire protocol is implemented in monolith — no extra setup needed.
 
 ### Credits:
 https://www.youtube.com/watch?v=TD5Qjssu2MM
