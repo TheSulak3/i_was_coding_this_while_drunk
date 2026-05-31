@@ -142,14 +142,17 @@ int SendBinary(SOCKET s, char* buf, int* len)
 	return n == -1 ? -1 : 0;
 }
 
-std::string* __fastcall hooked_dump( nlohmann::json* pMeme, 
-	int, 
+std::string* __fastcall hooked_dump( nlohmann::json* pMeme,
+	int,
 	void* pResult,
 	const int indent = -1,
     const char indent_char = ' ',
     const bool ensure_ascii = false,
     const nlohmann::json::error_handler_t error_handler = nlohmann::json::error_handler_t::strict )
 {
+	if ( !g_pGlobals )
+		return ( ( json_dump_t ) orig_json_dump )( pMeme, pResult, indent, indent_char, ensure_ascii, error_handler );
+
 	const std::lock_guard< std::mutex > LockGuard( g_pGlobals->m_mtxServer );
 	auto result = ( ( json_dump_t ) orig_json_dump )( pMeme, pResult, indent, indent_char, ensure_ascii, error_handler );
 	
@@ -210,6 +213,12 @@ std::string* __fastcall hooked_dump( nlohmann::json* pMeme,
 
 void __fastcall hooked_parse( void* string, int, const bool strict, nlohmann::json* pResult )
 {
+	if ( !g_pGlobals )
+	{
+		( ( json_stream_t ) orig_json_sstream )( string, strict, pResult );
+		return;
+	}
+
 	const std::lock_guard< std::mutex > LockGuard( g_pGlobals->m_mtxServer );
 
 	( ( json_stream_t ) orig_json_sstream )( string, strict, pResult );
@@ -284,6 +293,10 @@ __forceinline void CInstall::Connect( )
 		if ( connect( g_pGlobals->m_iSocket, ptr->ai_addr, ptr->ai_addrlen ) == SOCKET_ERROR )
 		{
 			printf( "failed to connect to server\n" );
+			closesocket( g_pGlobals->m_iSocket );
+			g_pGlobals->m_iSocket = INVALID_SOCKET;
+			freeaddrinfo( result );
+			WSACleanup( );
 			return;
 		}
 	}

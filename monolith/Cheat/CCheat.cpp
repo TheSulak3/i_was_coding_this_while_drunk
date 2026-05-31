@@ -71,19 +71,23 @@ __forceinline void CCheat::SetupInterfaces( )
 {
     *reinterpret_cast< void** >( 0x2E48E06C ) = malloc( 0x1000 );
     
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 4 ) = *reinterpret_cast< void** >( FindPattern( "engine.dll", "68 ? ? ? ? FF 35 ? ? ? ? FF 10 8A 57 64 E8" ) + 0x1 );
-    
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 12 ) = *reinterpret_cast< void** >( FindPattern( "server.dll", 
-        "B9 ? ? ? ? 50 E8 ? ? ? ? 84 C0 0F 84 B6 F9 FF FF 51 8B CB" ) + 0x1 );
+	#define ASSIGN_FROM_PATTERN( base, offset, module, pattern, rel ) \
+		do { \
+			auto _p = FindPattern( module, pattern ); \
+			if ( _p ) *reinterpret_cast< void** >( ( *( uint32_t* ) base ) + offset ) = *reinterpret_cast< void** >( _p + rel ); \
+			else printf( "pattern failed: %s %s\n", module, pattern ); \
+		} while ( 0 )
+
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 4,   "engine.dll",          "68 ? ? ? ? FF 35 ? ? ? ? FF 10 8A 57 64 E8", 0x1 );
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 12,  "server.dll",          "B9 ? ? ? ? 50 E8 ? ? ? ? 84 C0 0F 84 B6 F9 FF FF 51 8B CB", 0x1 );
     *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 24 ) = GetInterface< void >( GetModuleHandleA( "client.dll" ), "VClientEntityList003" );
     *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 32 ) = GetInterface< void >( GetModuleHandleA( "engine.dll" ), "VEngineClient014" );
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 44,  "client.dll",          "B9 ? ? ? ? F3 0F 11 04 24 FF 50 10", 0x1 );
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 48,  "vguimatsurface.dll",  "A1 ? ? ? ? B9 ? ? ? ? FF 50 78", 0x1 );
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 132, "filesystem_stdio.dll","C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? E9", 0x2 );
+	ASSIGN_FROM_PATTERN( 0x2E48E06C, 172, "client.dll",          "C7 05 ? ? ? ? ? ? ? ? 24 FD C7 05 ? ? ? ? FF FF FF FF", 0x2 );
 
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 44 ) = *reinterpret_cast< void** >( FindPattern( "client.dll", "B9 ? ? ? ? F3 0F 11 04 24 FF 50 10" ) + 0x1 );
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 48 ) = *reinterpret_cast< void** >( FindPattern( "vguimatsurface.dll", "A1 ? ? ? ? B9 ? ? ? ? FF 50 78" ) + 0x1 );
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 132 ) = *reinterpret_cast< void** >( FindPattern( "filesystem_stdio.dll", 
-        "C7 05 ? ? ? ? ? ? ? ? C7 05 ? ? ? ? ? ? ? ? E9" ) + 0x2 );
-    *reinterpret_cast< void** >( ( *( uint32_t* ) 0x2E48E06C ) + 172 ) = *reinterpret_cast< void** >( FindPattern( "client.dll", 
-        "C7 05 ? ? ? ? ? ? ? ? 24 FD C7 05 ? ? ? ? FF FF FF FF" ) + 0x2 );
+	#undef ASSIGN_FROM_PATTERN
 
     printf( "ok\n" );
 }
@@ -97,7 +101,13 @@ __forceinline void CCheat::SetupHooks( )
     *reinterpret_cast< HWND* >( 0x2E468E74 ) = hWnd;
     *reinterpret_cast< LONG* >( 0x2E48DFF4 ) = SetWindowLongPtr( hWnd, GWL_WNDPROC, 0x2E199E80 );
 
-	void* pDevice = **reinterpret_cast< void*** >( FindPattern( "shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C" ) + 0x1 );
+	auto pDevicePattern = FindPattern( "shaderapidx9.dll", "A1 ? ? ? ? 50 8B 08 FF 51 0C" );
+	if ( !pDevicePattern )
+	{
+		printf( "failed to find d3d device\n" );
+		return;
+	}
+	void* pDevice = **reinterpret_cast< void*** >( pDevicePattern + 0x1 );
 
     std::vector< std::tuple< uint8_t*, uint32_t, uint32_t > > aHooks =
 	{

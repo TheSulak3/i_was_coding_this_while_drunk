@@ -7,7 +7,7 @@
 BOOL __stdcall DllMain( HMODULE hModule, DWORD ulReason, LPVOID lpReserved )
 {
 	if ( ulReason != DLL_PROCESS_ATTACH )
-		return 0;
+		return 1;
 
 	AllocConsole( );
 	freopen_s( reinterpret_cast< FILE** >( stdin ), "CONIN$", "r", stdin );

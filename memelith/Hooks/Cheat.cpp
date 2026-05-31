@@ -1507,6 +1507,11 @@ void __fastcall Hooks::Cheat::hkInitFonts( void* thisptr, int, int pDevice )
 	using InitFont_t = void ( __thiscall* ) ( uint32_t, const char* );
 
 	void*** pSurface = ( *reinterpret_cast< void***** >( 0x40808990 ) )[ 12 ];
+	if ( !pSurface )
+	{
+		printf( "failed to get surface interface\n" );
+		return;
+	}
 
 	int iWidth = 0, iHeight = 0;
 

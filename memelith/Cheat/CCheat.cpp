@@ -174,6 +174,11 @@ __forceinline void CCheat::SetupInterfaces( )
 		return;
 
 	pInterfaces[ 0 ] = GetInterface< uint8_t >( GetModuleHandleA( "client.dll" ), "VClient0", false );
+	if ( !pInterfaces[ 0 ] )
+	{
+		free( pInterfaces );
+		return;
+	}
 	pInterfaces[ 1 ] = **( uint8_t*** )( **( uint32_t** ) pInterfaces[ 0 ] + 0x1F );
 	pInterfaces[ 2 ] = **( uint8_t*** )( g_aInterfaces[ 0 ] );
 	pInterfaces[ 4 ] = **( uint8_t*** )( *( uint32_t* )( *( uint32_t* ) pInterfaces[ 0 ] + 0x28 ) + 0x5 );
@@ -191,7 +196,10 @@ __forceinline void CCheat::SetupInterfaces( )
 	pInterfaces[ 15 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VDebugOverlay", false );
 	pInterfaces[ 17 ] = GetInterface< uint8_t >( GetModuleHandleA( "localize.dll" ), "Localize_001" );
 	pInterfaces[ 16 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VModelInfoClient", false );
-	pInterfaces[ 18 ] = *( uint8_t** ) GetProcAddress( GetModuleHandleA( "tier0.dll" ), "g_pMemAlloc" );
+	{
+		auto pMemAlloc = GetProcAddress( GetModuleHandleA( "tier0.dll" ), "g_pMemAlloc" );
+		pInterfaces[ 18 ] = pMemAlloc ? *( uint8_t** ) pMemAlloc : nullptr;
+	}
 	pInterfaces[ 19 ] = **( uint8_t*** ) g_aInterfaces[ 2 ];
 	pInterfaces[ 20 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( void* ) >( 0x40269A70 ) )( malloc( 0x6C ) );
 	pInterfaces[ 21 ] = GetInterface< uint8_t >( GetModuleHandleA( "engine.dll" ), "VEngineModel", false );
@@ -228,16 +236,30 @@ __forceinline void CCheat::SetupInterfaces( )
 	auto fnGetHSteamUser = GetProcAddress( hSteamAPI, "SteamAPI_GetHSteamUser" );
 	auto fnGetPipe = GetProcAddress( hSteamAPI, "SteamAPI_GetHSteamPipe" );
 	auto fnSteamClient = GetProcAddress( hSteamAPI, "SteamClient" );
-	
+
+	if ( !fnGetHSteamUser || !fnGetPipe || !fnSteamClient )
+	{
+		printf( "failed to get steam api exports\n" );
+		free( pInterfaces );
+		return;
+	}
+
 	uint32_t** pSteamUser = ( reinterpret_cast< uint32_t** ( __cdecl* ) ( void ) >( fnGetHSteamUser ) )( );
 	uint32_t** pSteamPipe = ( reinterpret_cast< uint32_t** ( __cdecl* ) ( void ) >( fnGetPipe ) )( );
 	uint32_t** pSteamClient = ( reinterpret_cast< uint32_t** ( __cdecl* ) ( void ) >( fnSteamClient ) )( );
 
-	pInterfaces[ 35 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, uint32_t**, const char* ) >( 
+	if ( !pSteamClient || !pSteamClient[ 0 ] )
+	{
+		printf( "failed to get steam client\n" );
+		free( pInterfaces );
+		return;
+	}
+
+	pInterfaces[ 35 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, uint32_t**, const char* ) >(
 		pSteamClient[ 0 ][ 8 ] ) )( pSteamClient, pSteamUser, pSteamPipe, "SteamFriends015" );
-	pInterfaces[ 36 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, const char* ) >( 
+	pInterfaces[ 36 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, const char* ) >(
 		pSteamClient[ 0 ][ 9 ] ) )( pSteamClient, pSteamPipe, "SteamUtils008" );
-	pInterfaces[ 37 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, uint32_t**, const char* ) >( 
+	pInterfaces[ 37 ] = ( reinterpret_cast< uint8_t* ( __thiscall* ) ( uint32_t**, uint32_t**, uint32_t**, const char* ) >(
 		pSteamClient[ 0 ][ 16 ] ) )( pSteamClient, pSteamUser, pSteamPipe, "SteamNetworking005" );
 
 	*reinterpret_cast< FARPROC* >( 0x407E920C ) = GetProcAddress( GetModuleHandleA( "vstdlib.dll" ), "RandomSeed" );
