@@ -51,8 +51,8 @@ T* GetInterface( HMODULE hModule, const char* szInterfaceVersion, bool bExact = 
 
 void CCheat::Init( )
 {
-    *reinterpret_cast< uint32_t* >( 0x224628CA ) = 0xF0;
-    *reinterpret_cast< uint32_t* >( 0x224628FA ) = 0xF4;
+    *reinterpret_cast< uint32_t* >( 0x224628CA ) = 0x100; // m_iHealth (hazedumper)
+    *reinterpret_cast< uint32_t* >( 0x224628FA ) = 0xF4; // m_iTeamNum (hazedumper)
 
     std::vector< uint32_t > aInThirdperson =
     {
